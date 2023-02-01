@@ -11,7 +11,7 @@ module.exports = mongoose => {
         required: [true, 'Head is required'],
       },
       desc: String,
-      goal_date: Date,
+      deadline: Date,
       status: String,
     },
     {
