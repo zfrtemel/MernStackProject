@@ -6,7 +6,7 @@ const User = db.User;
 
 const register = async (req, res) => {
     const { name, email, password } = req.body;
-    const FindUser = await User.findOne({ where: { email: email } });
+    const FindUser = await User.findOne({ email: email });
     if (FindUser) {
         return res.status(500).send('Bu Email Adresi ile zaten bir hesap oluşturulmuş. Lütfen Giriş Yapınız.');
     }
@@ -14,7 +14,7 @@ const register = async (req, res) => {
         return res.status(500).send('Şifreniz en az 6 karakter olmalıdır.');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 24);
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
         name: name,
         email: email,
@@ -27,7 +27,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     const { email, password } = req.body;
-    const user = await User.findOne({ where: { email: email } });
+    const user = await User.findOne({ email: email });
     if (!user) {
         return res.status(500).send('Bu Email Adresi ile bir hesap bulunamadı. Lütfen Kayıt Olunuz.');
     }

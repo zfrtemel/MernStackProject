@@ -22,6 +22,6 @@ module.exports = mongoose => {
             }
         }
     );
-    const Goal = mongoose.model("goals", schema);
-    return Goal;
+    const User = mongoose.model("users", schema);
+    return User;
 };

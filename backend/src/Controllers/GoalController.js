@@ -1,13 +1,21 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const db = require('../Models/index')
 const dotenv = require('dotenv').config();
-const Goal = db.Goal;
+const User = require('../Models/index').User;
+const Goal = require('../Models/index').Goal;
 
 const CreateGoal = async (req, res) => {
-    const { title, description, deadline, status } = req.body;
-    const user = req.user.id;
-    const FindGoal = await Goal.findOne({ where: { title: title } }, { where: { description: description } });
+    const { head, desc, deadline, status } = req.body;
+    const token = req.headers.authorization.split(' ')[1];
+    console.log('create goal');
+    const user = jwt.verify(token, process.env.SECRET_TOKEN, (err, user) => {
+        if (err) {
+            return res.status(500).send('Hatalı Token');
+        }
+        return user.id;
+    });
+    const FindGoal = await Goal.findOne({ head: head }, { desc: desc });
+    console.log(FindGoal);
     if (FindGoal) {
         return res.status(500).send('Bu Başlık ile zaten bir hedef oluşturulmuş. Lütfen Başka Bir Başlık Giriniz.');
     }
@@ -16,8 +24,8 @@ const CreateGoal = async (req, res) => {
 
     const goal = await Goal.create({
         user: user,
-        title: title,
-        description: description,
+        head: head,
+        desc: desc,
         deadline: deadline,
         status: status,
     });
@@ -25,16 +33,30 @@ const CreateGoal = async (req, res) => {
 };
 
 const GetUserGoals = async (req, res) => {
-    const user = req.user.id;
+    const token = req.headers.authorization.split(' ')[1];
+    const user = jwt.verify(token, process.env.SECRET_TOKEN, (err, user) => {
+        if (err) {
+            return res.status(500).send('Hatalı Token');
+        }
+        return user.id;
+    });
+
     if (user == null)
         return res.status(500).send('Hedefleri Listelemek için Giriş Yapınız.');
-    const Goals = await Goal.findAll({ where: { user: user } });
-    res.status(200).send({ status: "success", goals: Goals });
+    const Goals = await Goal.find({ user: user });
+
+    res.status(200).send({ status: "success", data: [Goals] });
 }
 const UpdateGoal = async (req, res) => {
     const { title, description, deadline, status } = req.body;
-    const user = req.user.id;
-    const goal = await Goal.findOne({ where: { title: title } }, { where: { description: description } });
+    const token = req.headers.authorization.split(' ')[1];
+    const user = jwt.verify(token, process.env.SECRET_TOKEN, (err, user) => {
+        if (err) {
+            return res.status(500).send('Hatalı Token');
+        }
+        return user.id;
+    });
+    const goal = await Goal.findOne({ title: title }, { description: description });
 
     if (goal == null)
         return res.status(500).send('Bu Başlık ile bir hedef bulunamadı.');
@@ -46,15 +68,21 @@ const UpdateGoal = async (req, res) => {
     const UpdatedGoal = await Goal.update({
         title: title,
         description: description,
-        deadline: deadline,
+        deadline: new Date(deadline).toISOString(),
         status: status,
-    }, { where: { title: title } }, { where: { description: description } });
+    }, { title: title }, { description: description });
     res.status(200).send({ status: "success", goal: UpdatedGoal });
 }
 const DeleteGoal = async (req, res) => {
     const { title, description } = req.body;
-    const user = req.user.id;
-    const goal = await Goal.findOne({ where: { title: title } }, { where: { description: description } });
+    const token = req.headers.authorization.split(' ')[1];
+    const user = jwt.verify(token, process.env.SECRET_TOKEN, (err, user) => {
+        if (err) {
+            return res.status(500).send('Hatalı Token');
+        }
+        return user.id;
+    });
+    const goal = await Goal.findOne({ title: title }, { description: description });
 
     if (goal == null)
         return res.status(500).send('Bu Başlık ile bir hedef bulunamadı.');
@@ -63,7 +91,7 @@ const DeleteGoal = async (req, res) => {
     if (goal.user != user)
         return res.status(500).send('Bu Hedefi Silmek için Yetkiniz Yok.');
 
-    const DeletedGoal = await Goal.destroy({ where: { title: title } }, { where: { description: description } });
+    const DeletedGoal = await Goal.destroy({ _id: _id });
     res.status(200).send({ status: "success", goal: DeletedGoal });
 }
 
