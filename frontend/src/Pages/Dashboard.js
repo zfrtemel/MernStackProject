@@ -10,8 +10,8 @@ export const Dashboard = () => {
   const dispatch = useDispatch()
 
   const { user } = useSelector((state) => state.auth.user)
-  const { goals, isLoading, isError, message } = useSelector(
-    (state) => state.goals.goals
+  const { goals = [], isLoading, isError, message } = useSelector(
+    (state) => state.goals
   )
 
   useEffect(() => {
@@ -24,12 +24,10 @@ export const Dashboard = () => {
     }
 
     dispatch(getGoals())
-
     return () => {
       dispatch(reset())
     }
   }, [user, navigate, isError, message, dispatch])
-
   if (isLoading) {
     return <Loading />
   }
@@ -70,11 +68,9 @@ export const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {goals && goals.map((goal) => (
+              {goals.map((goal) => (
                 <GoalItem key={goal._id} goal={goal} />
               ))}
-
-
             </tbody>
           </table>
         </div>

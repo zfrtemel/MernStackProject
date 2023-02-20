@@ -7,7 +7,6 @@ const Goal = require('../Models/index').Goal;
 const CreateGoal = async (req, res) => {
     const { head, desc, deadline, status } = req.body;
     const token = req.headers.authorization.split(' ')[1];
-    console.log('create goal');
     const user = jwt.verify(token, process.env.SECRET_TOKEN, (err, user) => {
         if (err) {
             return res.status(500).send('Hatalı Token');
@@ -15,7 +14,6 @@ const CreateGoal = async (req, res) => {
         return user.id;
     });
     const FindGoal = await Goal.findOne({ head: head }, { desc: desc });
-    console.log(FindGoal);
     if (FindGoal) {
         return res.status(500).send('Bu Başlık ile zaten bir hedef oluşturulmuş. Lütfen Başka Bir Başlık Giriniz.');
     }
